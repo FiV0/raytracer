@@ -81,3 +81,7 @@
   `(progn
      ,@(mapcar #'(lambda (x) `(print ,x)) rest)))
 
+;; luminosity method
+(defun to-greyscale (r g b)
+  (values (* 0.21 r) (* 0.72 g) (* 0.07 b)))
+
