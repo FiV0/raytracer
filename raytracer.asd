@@ -7,6 +7,9 @@
   :depends-on (#:vecto)
   :serial t
   :components ((:file "package")
+               (:file "color")
+               (:file "objects")
                (:file "utils")
-               (:file "raytracer")))
+               (:file "raytracer")
+               ))
 

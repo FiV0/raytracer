@@ -4,17 +4,27 @@
 
 (defun sq (x) (* x x))
 
-(defun mag (x y z)
-  (sqrt (+ (sq x) (sq y) (sq z))))
+(defun mag (v)
+  (sqrt (+ (sq (x v)) (sq (y v)) (sq (z v)))))
 
-(defun unit-vector (x y z)
-  (let ((d (mag x y z)))
+;; (defstruct (vector (:print-function print-vector))
+;;   x y z)
+;;
+;; (defun print-vector (v stream depth)
+;;   (declare (ignore depth))
+;;   (format stream "#v(~A,~A,~A)" (vector-x v) (vector-y) (vector-y)))
+
+(defun unit-vector (v)
+  (let ((d (mag v)))
     (if (/= d 0)
-      (values (/ x d) (/ y d) (/ z d))
-      (values 0 0 0))))
+      (make-point :x (/ (x v) d) :y (/ (y v) d) :z (/ (z v) d))
+      (make-point :x 0 :y 0 :z 0))))
 
 (defstruct (point (:conc-name nil))
   x y z)
+
+(defun construct-point (x y z)
+  (make-point :x x :y y :z z))
 
 (defun point-equal (p1 p2)
   (and (< (- (x p1) (x p2) eps))
@@ -22,17 +32,10 @@
        (< (- (z p1) (z p2) eps))))
 
 (defun same-direction (v1 v2)
-  (multiple-value-bind (x1 y1 z1) (unit-vector (x v1) (y v1) (z v1))
-    (multiple-value-bind (x2 y2 z2) (unit-vector (x v2) (y v2) (z v2))
-      (let ((uv1 (make-point :x x1 :y y1 :z z1))
-            (uv2 (make-point :x x2 :y y2 :z z2)))
-        (point-equal uv1 uv2)))))
+  (point-equal (unit-vector v1) (unit-vector v2)))
 
 (defun distance (p1 p2)
-  (mag (- (x p1) (x p2))
-       (- (y p1) (y p2))
-       (- (z p1) (z p2))))
-
+  (mag (sub-point p1 p2)))
 
 (defun apply-2-points (op p1 p2)
   (make-point :x (funcall op (x p1) (x p2))
@@ -77,11 +80,20 @@
             (min (/ (+ (- b) discrt) (* 2 a))
                  (/ (- (- b) discrt) (* 2 a))))))))
 
-(defmacro mvprint (&rest rest)
+(defmacro mvprint (output-stream &rest rest)
   `(progn
-     ,@(mapcar #'(lambda (x) `(print ,x)) rest)))
+     ,@(mapcar #'(lambda (x)
+                   `(let ((lst (multiple-value-list ,x)))
+                      (mapcar #'(lambda (y)
+                                  (print y ,output-stream))
+                              lst)))
+               rest)
+     (values)))
 
-;; luminosity method
-(defun to-greyscale (r g b)
-  (values (* 0.21 r) (* 0.72 g) (* 0.07 b)))
+(defun mvprint-test ()
+  (mvprint 1 (values 2 3) 4))
+
+
+
+
 
